@@ -46,12 +46,14 @@ export async function registerUser(req: Request, res: Response) {
     const salt = await bcrypt.genSalt(10);
     const hash = await bcrypt.hash(password, salt);
     const result = await pool.query(
-      "INSERT INTO users (username, email, password) VALUES ($1, $2, $3) RETURNING id",
+      "INSERT INTO users (username, email, password) VALUES ($1, $2, $3) RETURNING *",
       [username, email, hash]
     );
     const newUser = result.rows[0];
 
     res.status(200).send({ message: "User created", user: newUser });
+    console.log(newUser);
+    console.log(result.rows);
   } catch (e) {
     console.log(e);
     res.status(500).send({ message: "Server error" });
@@ -103,7 +105,11 @@ export async function getCurrentUser(req: Request, res: Response) {
     const result = await pool.query("SELECT * FROM users WHERE id = $1", [id]);
     const user = result.rows[0];
 
-    if (user) res.status(200).send({ message: "User found", user: user });
+    if (user) {
+      res.status(200).send({ message: "User found", user: user });
+      console.log(user);
+      return;
+    }
   } catch (e) {
     console.log(e);
     res.status(500).send({ message: "Server error" });
